@@ -3,6 +3,7 @@ import web_socket
 from web_socket.shark_socket import SharkSocket
 import json
 import threading
+import requests
 
 
 class SocketThread(threading.Thread):
