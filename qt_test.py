@@ -1,10 +1,10 @@
-import sys
-from PyQt5 import QtWidgets, QtCore
+import json
 
-q_application = QtWidgets.QApplication(sys.argv)
-q_widget = QtWidgets.QWidget()
-q_widget.resize(320, 240)
-q_widget.setWindowTitle("Hello PyQt5")
+json_str = '{"id":"myid007","message":"test","type":"TEXT"}'
+test = [-119, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72]
 
-q_widget.show()
-sys.exit(q_application.exec_())
+print(len(test))
+b = bytes(test)
+print(b)
+# data_bytes = bytes(test)
+# print(data_bytes)

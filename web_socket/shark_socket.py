@@ -1,5 +1,8 @@
 import websockets
 import asyncio
+from PIL import Image
+from io import BytesIO
+import json
 
 USERS = set()
 
@@ -45,4 +48,42 @@ async def main_logic(websocket, path):
 async def recv_msg(websocket):
     while True:
         recv_text = await websocket.recv()
-        print(recv_text)
+
+
+        # bytes_stream = BytesIO(recv_text)
+        # roiimg = Image.open(bytes_stream)
+        # roiimg.show()
+
+        if isinstance(recv_text, str):
+            print(recv_text)
+            print(type(recv_text))
+        elif isinstance(recv_text,bytes):
+            bytes_stream = BytesIO(recv_text)
+            roiimg = Image.open(bytes_stream)
+            roiimg.show()
+
+        # try:
+        #     json_loads = json.loads(recv_text)
+        # except ValueError as e:
+        #     print(e)
+        #     return
+
+
+
+        # if json_loads['type'] == "TEXT":
+        #     # print(json_loads['message'])
+        #     bytes_data = json_loads['message'].encode("utf-8")
+        #     # b = bytes(json_loads['message'])
+        #     print(bytes_data)
+        #     bytes_stream = BytesIO(bytes(bytes_data))
+        #     roiimg = Image.open(bytes_stream)
+        #     roiimg.show()
+        # elif json_loads['type'] == "IMG":
+        #     pass
+        #     # print(type(json_loads['dataBuf']))
+        #     # print("len: "+len(json_loads['dataBuf']))
+        #     # data_bytes = bytes(json_loads['dataBuf'])
+        #     # print(data_bytes)
+        #     # bytes_stream = BytesIO(data_bytes)
+        #     # roiimg = Image.open(bytes_stream)
+        #     # roiimg.show()
