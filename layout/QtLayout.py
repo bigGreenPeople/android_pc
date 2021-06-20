@@ -1,33 +1,35 @@
-#!/usr/bin/python3
-# -*- coding: utf-8 -*-
-
-"""
-ZetCode PyQt5 tutorial 
-
-In this example, we create a more 
-complicated window layout using
-the QGridLayout manager. 
-
-Author: Jan Bodnar
-Website: zetcode.com 
-Last edited: August 2017
-"""
-import adbutils
-import web_socket
-from web_socket.shark_socket import SharkSocket
-import json
-import threading
-import requests
-import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+from PyQt5 import QtWebSockets, QtNetwork
+from PyQt5.QtWebSockets import *
 
 
 class Example(QWidget):
 
     def __init__(self):
         super().__init__()
+        # 类名
+        self.nameLineEdit = None
+        # 文本
+        self.textLineEdit = None
+        # id
+        self.idLineEdit = None
+        # 描述
+        self.describeLineEdit = None
+
+        # 设备列表
+        self.selectDeviceComboBox = None
+        # 窗口列表
+        self.activityComboBox = None
+
+        # 布局数
+        self.tree = None
+
+        # 手机图像
+        self.pixMap = None
+        self.imgeLabel = None
+
         self.initUI()
 
     def initUI(self):
@@ -37,13 +39,6 @@ class Example(QWidget):
         all_box = QHBoxLayout(self)
         # all_box.addWidget(self.gridGroupBox)
 
-        # 实例化QFrame控件
-        # self.op_frame = QFrame()
-        # self.op_frame.setFrameShape(QFrame.StyledPanel)
-        # self.tree_frame = QFrame()
-        # self.tree_frame.setFrameShape(QFrame.StyledPanel)
-        # self.img_frame = QFrame()
-        # self.img_frame.setFrameShape(QFrame.StyledPanel)
         # # 实例化QSplitter控件并设置初始为水平方向布局
         splitter = QSplitter(Qt.Horizontal)
         splitter.addWidget(self.verticalSplitter)
@@ -78,24 +73,24 @@ class Example(QWidget):
         layout.setAlignment(Qt.AlignTop)
 
         nameLabel = QLabel("类名")
-        nameLineEdit = QLineEdit("")
+        self.nameLineEdit = QLineEdit("")
         layout.addWidget(nameLabel, 1, 0)
-        layout.addWidget(nameLineEdit, 1, 1)
+        layout.addWidget(self.nameLineEdit, 1, 1)
 
         textLabel = QLabel("文本")
-        textLineEdit = QLineEdit("")
+        self.textLineEdit = QLineEdit("")
         layout.addWidget(textLabel, 2, 0)
-        layout.addWidget(textLineEdit, 2, 1)
+        layout.addWidget(self.textLineEdit, 2, 1)
 
         idLabel = QLabel("ID")
-        idLineEdit = QLineEdit("")
+        self.idLineEdit = QLineEdit("")
         layout.addWidget(idLabel, 3, 0)
-        layout.addWidget(idLineEdit, 3, 1)
+        layout.addWidget(self.idLineEdit, 3, 1)
 
         describeLabel = QLabel("描述")
-        describeLineEdit = QLineEdit("")
+        self.describeLineEdit = QLineEdit("")
         layout.addWidget(describeLabel, 4, 0)
-        layout.addWidget(describeLineEdit, 4, 1)
+        layout.addWidget(self.describeLineEdit, 4, 1)
 
         # 添加操作界面的控件
         layout2 = QGridLayout()
@@ -105,13 +100,13 @@ class Example(QWidget):
         selectDeviceLabel = QLabel("选 择 设 备")
         selectDeviceLabel.setAlignment(Qt.AlignBottom)
 
-        selectDeviceComboBox = QComboBox()
-        selectDeviceComboBox.addItem("192.168.0.1:5555")
-        selectDeviceComboBox.addItem("192.168.0.2:5555")
-        selectDeviceComboBox.addItem("192.168.0.3:5555")
+        self.selectDeviceComboBox = QComboBox()
+        self.selectDeviceComboBox.addItem("192.168.0.1:5555")
+        self.selectDeviceComboBox.addItem("192.168.0.2:5555")
+        self.selectDeviceComboBox.addItem("192.168.0.3:5555")
 
         layout2.addWidget(selectDeviceLabel, 1, 0, 1, 1)
-        layout2.addWidget(selectDeviceComboBox, 1, 1, 1, 2)
+        layout2.addWidget(self.selectDeviceComboBox, 1, 1, 1, 2)
 
         appNameLabel = QLabel("应 用 名 称")
         appNameLabel.setAlignment(Qt.AlignBottom)
@@ -135,12 +130,12 @@ class Example(QWidget):
         activityLabel = QLabel("选 择 窗 口")
         activityLabel.setAlignment(Qt.AlignBottom)
 
-        activityComboBox = QComboBox()
-        activityComboBox.addItem("Activity1")
-        activityComboBox.addItem("Activity2")
+        self.activityComboBox = QComboBox()
+        self.activityComboBox.addItem("Activity1")
+        self.activityComboBox.addItem("Activity2")
 
         layout3.addWidget(activityLabel, 5, 0, 1, 1)
-        layout3.addWidget(activityComboBox, 5, 1, 1, 2)
+        layout3.addWidget(self.activityComboBox, 5, 1, 1, 2)
         # layout.addWidget(imgeLabel, 0, 2, 4, 1)
         # layout.setColumnStretch(1, 10)
         # self.gridGroupBox.resize(100, 100)
@@ -207,26 +202,3 @@ class Example(QWidget):
     def closeEvent(self, event):
         event.accept()
         # sys.exit(0)
-        thread.closeAll()
-
-class SocketThread(threading.Thread):
-    def run(self):
-        print(f"开启Socket线程：  {threading.current_thread().name} \n")
-        self.socket = SharkSocket(9873)
-        print("结束Socket线程： " + threading.current_thread().name + "\n")
-
-    def closeAll(self):
-        self.socket.close_all()
-
-
-
-
-if __name__ == '__main__':
-    thread = SocketThread()
-    thread.start()
-
-    app = QApplication(sys.argv)
-    ex = Example()
-    sys.exit(app.exec_())
-    # thread.join()
-    # print("主线程退出")
