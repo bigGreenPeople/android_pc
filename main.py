@@ -13,6 +13,7 @@ if __name__ == '__main__':
     serverObject = QWebSocketServer('My Socket', QWebSocketServer.NonSecureMode)
 
     ex = Example()
+
     server = MyServer(serverObject, ex)
     serverObject.closed.connect(app.quit)
 

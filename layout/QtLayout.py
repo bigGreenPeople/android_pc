@@ -49,7 +49,7 @@ class Example(QWidget):
         all_box.addWidget(splitter)
         self.setLayout(all_box)
 
-        self.resize(1600, 900)
+        self.resize(1200, 900)
         self.cneter()
 
         self.setWindowTitle('Shark Android布局查看')
@@ -65,7 +65,7 @@ class Example(QWidget):
         self.verticalSplitter.addWidget(self.gridConnectGroupBox)
         self.verticalSplitter.addWidget(self.gridOpGroupBox)
 
-        self.verticalSplitter.setSizes([100, 200, 300])
+        self.verticalSplitter.setSizes([100, 200, 280])
 
         # 添加控件界面的控件
         layout = QGridLayout()
@@ -182,11 +182,17 @@ class Example(QWidget):
     def createImgGroupBox(self):
         self.imgGroupBox = QGroupBox("手机图像")
         layout = QVBoxLayout()
-        imgeLabel = QLabel()
+        self.imgeLabel = QLabel()
 
-        pixMap = QPixmap("img/phone.png")
-        imgeLabel.setPixmap(pixMap)
-        layout.addWidget(imgeLabel)
+        self.pixMap = QPixmap("img/test.png")
+
+        # self.imgeLabel.setScaledContents(True)
+        self.pixMap = self.pixMap.scaled(self.size().height(), 850, Qt.KeepAspectRatio,
+                                         Qt.SmoothTransformation)
+        # self.imgeLabel.setPixmap(self.pixMap)
+        self.imgeLabel.setMinimumSize(400,400)
+
+        layout.addWidget(self.imgeLabel)
         self.imgGroupBox.setLayout(layout)
 
     def cneter(self):
@@ -202,3 +208,20 @@ class Example(QWidget):
     def closeEvent(self, event):
         event.accept()
         # sys.exit(0)
+
+    def updateImg(self, bytes):
+        # buffer = QBuffer(bytes)
+        # print(self.pixMap)
+        # buffer.open(QIODevice.WriteOnly)
+
+        self.pixMap.loadFromData(bytes)
+        # self.pixMap.save("img/test.png")
+        self.pixMap = self.pixMap.scaled(QWIDGETSIZE_MAX, 800, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
+        # self.pixMap.scaled(152, 76, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        # self.imgeLabel.setScaledContents(True)
+        self.imgeLabel.setPixmap(self.pixMap)
+        # self.imgeLabel.resize(self.size().height(), QWIDGETSIZE_MAX)
+
+        # self.pixMap = QPixmap("img/phone.png")
+        # self.pixMap

@@ -5,6 +5,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWebSockets import *
 from PyQt5 import QtWebSockets, QtNetwork
 
+
 class MyServer(QObject):
     def __init__(self, parent, ex):
         super(QObject, self).__init__(parent)
@@ -31,16 +32,20 @@ class MyServer(QObject):
 
         self.clients.append(self.clientConnection)
 
+    def sendMessage(self, message):
+        self.clientConnection.sendTextMessage(message)
+
     def processTextMessage(self, message):
         if (self.clientConnection):
             print(message)
             self.ex.nameLineEdit.setText(message)
-            self.clientConnection.sendTextMessage(message)
+            # self.clientConnection.sendTextMessage(message)
 
     def processBinaryMessage(self, message):
         if (self.clientConnection):
-            print(message)
-            self.clientConnection.sendBinaryMessage(message)
+            self.ex.updateImg(message)
+
+            # self.clientConnection.sendBinaryMessage(message)
 
     def socketDisconnected(self):
         if (self.clientConnection):
