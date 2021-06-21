@@ -5,7 +5,7 @@ from PyQt5 import QtWebSockets, QtNetwork
 from PyQt5.QtWebSockets import *
 
 
-class Example(QWidget):
+class Example(QMainWindow):
 
     def __init__(self):
         super().__init__()
@@ -52,6 +52,7 @@ class Example(QWidget):
         self.resize(1200, 900)
         self.cneter()
 
+        self.statusBar().showMessage('就绪')
         self.setWindowTitle('Shark Android布局查看')
         self.show()
 
@@ -126,6 +127,8 @@ class Example(QWidget):
 
         get_android_layout_but = QPushButton('获取布局信息')
         layout3.addWidget(get_android_layout_but, 4, 0, 1, 3)
+        # 设置点击事件
+        get_android_layout_but.clicked.connect(self.getDeviceLayoutInfo)
 
         activityLabel = QLabel("选 择 窗 口")
         activityLabel.setAlignment(Qt.AlignBottom)
@@ -151,14 +154,16 @@ class Example(QWidget):
 
         self.tree = QTreeWidget()
         # 设置列数
-        self.tree.setColumnCount(1)
+        # self.tree.setColumnCount(1)
         # 设置树形控件头部的标题
         self.tree.setHeaderHidden(True)
+
+        # 设置树形控件的列的宽度
+        # self.tree.setColumnWidth(0, 160)
+
         # 设置根节点
         root = QTreeWidgetItem(self.tree)
         root.setText(0, 'root')
-        # 设置树形控件的列的宽度
-        self.tree.setColumnWidth(0, 160)
 
         # 设置子节点1
         child1 = QTreeWidgetItem(root)
@@ -190,7 +195,7 @@ class Example(QWidget):
         self.pixMap = self.pixMap.scaled(self.size().height(), 850, Qt.KeepAspectRatio,
                                          Qt.SmoothTransformation)
         # self.imgeLabel.setPixmap(self.pixMap)
-        self.imgeLabel.setMinimumSize(400,400)
+        self.imgeLabel.setMinimumSize(400, 400)
 
         layout.addWidget(self.imgeLabel)
         self.imgGroupBox.setLayout(layout)
@@ -209,6 +214,12 @@ class Example(QWidget):
         event.accept()
         # sys.exit(0)
 
+    def connectDevice(self):
+        self.statusBar().showMessage("连接设备中...")
+
+    def getDeviceLayoutInfo(self):
+        self.statusBar().showMessage("获取布局信息中...")
+
     def updateImg(self, bytes):
         # buffer = QBuffer(bytes)
         # print(self.pixMap)
@@ -225,3 +236,23 @@ class Example(QWidget):
 
         # self.pixMap = QPixmap("img/phone.png")
         # self.pixMap
+
+    def updateViewInfo(self):
+        self.nameLineEdit.setText("")
+        self.textLineEdit.setText("")
+        self.idLineEdit.setText("")
+        self.describeLineEdit.setText("")
+
+    def updateDevices(self):
+        self.selectDeviceComboBox.clear()
+        self.selectDeviceComboBox.addItem("")
+
+    def updateActivitys(self):
+        self.activityComboBox.clear()
+        self.activityComboBox.addItem("")
+
+    def updateTree(self):
+        pass
+
+    def updateImgLayout(self):
+        pass
