@@ -3,9 +3,12 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5 import QtWebSockets, QtNetwork
 from PyQt5.QtWebSockets import *
+from adbutils import adb
+
+DEVICES_SOCKET = {}
 
 
-class Example(QMainWindow):
+class Example(QWidget):
 
     def __init__(self):
         super().__init__()
@@ -30,7 +33,27 @@ class Example(QMainWindow):
         self.pixMap = None
         self.imgeLabel = None
 
+        self.timer = QTimer()  # 初始化定时器
+        self.timer.timeout.connect(self.time)
+        self.timerExec = True
+        self.timer.start(1000)
+
         self.initUI()
+
+    def time(self):
+        devices = adb.devices()
+        if len(DEVICES_SOCKET) != len(devices):
+            for d in devices:
+                if d not in DEVICES_SOCKET:
+                    self.selectDeviceComboBox.clear()
+                    DEVICES_SOCKET.clear()
+                    for d in devices:
+                        self.selectDeviceComboBox.addItem(d.serial)
+                        DEVICES_SOCKET[d.serial] = None
+                    break
+
+    def selectDeviceOnActivated(self, text):
+        self.timerExec = True
 
     def initUI(self):
         self.createGridGroupBox()
@@ -49,12 +72,11 @@ class Example(QMainWindow):
         all_box.addWidget(splitter)
         self.setLayout(all_box)
 
-        self.resize(1200, 900)
         self.cneter()
 
-        self.statusBar().showMessage('就绪')
+        # self.statusBar().showMessage('就绪')
         self.setWindowTitle('Shark Android布局查看')
-        self.show()
+        # self.show()
 
     def createGridGroupBox(self):
         self.verticalSplitter = QSplitter(Qt.Vertical)
@@ -102,9 +124,14 @@ class Example(QMainWindow):
         selectDeviceLabel.setAlignment(Qt.AlignBottom)
 
         self.selectDeviceComboBox = QComboBox()
-        self.selectDeviceComboBox.addItem("192.168.0.1:5555")
-        self.selectDeviceComboBox.addItem("192.168.0.2:5555")
-        self.selectDeviceComboBox.addItem("192.168.0.3:5555")
+        self.selectDeviceComboBox.activated[str].connect(self.selectDeviceOnActivated)
+        # self.selectDeviceComboBox.highlighted.connect(self.selectDeviceHighlighted)
+
+        self.selectDeviceComboBox.clear()
+        for d in adb.devices():
+            self.selectDeviceComboBox.addItem(d.serial)
+            DEVICES_SOCKET[d.serial] = None
+        # self.selectDeviceComboBox.clicked.connect(self.selectDeviceEditTextChanged)
 
         layout2.addWidget(selectDeviceLabel, 1, 0, 1, 1)
         layout2.addWidget(self.selectDeviceComboBox, 1, 1, 1, 2)
