@@ -6,6 +6,7 @@ from PyQt5.QtWebSockets import *
 from adbutils import adb
 
 DEVICES_SOCKET = {}
+ADB_DEVICE = None
 
 
 class Example(QWidget):
@@ -32,6 +33,9 @@ class Example(QWidget):
         # 手机图像
         self.pixMap = None
         self.imgeLabel = None
+
+        # 启动app
+        self.appNameEdit = None
 
         self.timer = QTimer()  # 初始化定时器
         self.timer.timeout.connect(self.time)
@@ -139,13 +143,14 @@ class Example(QWidget):
         appNameLabel = QLabel("应 用 名 称")
         appNameLabel.setAlignment(Qt.AlignBottom)
 
-        appNameEdit = QLineEdit("")
+        self.appNameEdit = QLineEdit("")
 
         layout2.addWidget(appNameLabel, 2, 0, 1, 1)
-        layout2.addWidget(appNameEdit, 2, 1, 1, 2)
+        layout2.addWidget(self.appNameEdit, 2, 1, 1, 2)
 
         start_app_layout_but = QPushButton('启动app')
         layout2.addWidget(start_app_layout_but, 3, 0, 1, 3)
+        start_app_layout_but.clicked.connect(self.startApp)
 
         # 添加操作界面的控件
         layout3 = QGridLayout()
@@ -264,22 +269,44 @@ class Example(QWidget):
         # self.pixMap = QPixmap("img/phone.png")
         # self.pixMap
 
-    def updateViewInfo(self):
-        self.nameLineEdit.setText("")
-        self.textLineEdit.setText("")
-        self.idLineEdit.setText("")
-        self.describeLineEdit.setText("")
+    def updateViewInfo(self, *args, **kwargs):
+        self.nameLineEdit.setText(kwargs["name"])
+        self.textLineEdit.setText(kwargs["text"])
+        self.idLineEdit.setText(kwargs["id"])
+        self.describeLineEdit.setText(kwargs["describe"])
 
     def updateDevices(self):
+        devices = adb.devices()
         self.selectDeviceComboBox.clear()
-        self.selectDeviceComboBox.addItem("")
+        DEVICES_SOCKET.clear()
+        for d in devices:
+            self.selectDeviceComboBox.addItem(d.serial)
+            DEVICES_SOCKET[d.serial] = None
 
-    def updateActivitys(self):
+    def updateActivitys(self, activitys):
         self.activityComboBox.clear()
-        self.activityComboBox.addItem("")
+        for activity in activitys:
+            self.activityComboBox.addItem(activity)
 
     def updateTree(self):
         pass
 
     def updateImgLayout(self):
         pass
+
+    def startApp(self):
+        # 获得选择的设备
+        selectDevice = self.selectDeviceComboBox.currentText()
+        # 获得启动的app
+        print(selectDevice)
+        appName = self.appNameEdit.text()
+        print(appName)
+        ADB_DEVICE = adb.device(serial=selectDevice)
+        print(ADB_DEVICE)
+        # 点亮唤醒屏幕
+        if not ADB_DEVICE.is_screen_on():
+            ADB_DEVICE.keyevent("26")
+            window_size = ADB_DEVICE.window_size()
+            ADB_DEVICE.swipe(window_size[0] / 2, window_size[1] - 200,
+                             window_size[0] / 2, 200, 0.2)
+        ADB_DEVICE.app_start("")
