@@ -27,6 +27,7 @@ class Example(QWidget):
         # 窗口列表
         self.activityComboBox = None
 
+        self.treeGrouplayout = None
         # 布局数
         self.tree = None
 
@@ -182,7 +183,7 @@ class Example(QWidget):
 
     def createTreeGroupBox(self):
         self.treeGroupBox = QGroupBox("布局结构")
-        layout = QVBoxLayout()
+        self.treeGrouplayout = QVBoxLayout()
 
         self.tree = QTreeWidget()
         # 设置列数
@@ -193,8 +194,8 @@ class Example(QWidget):
         # 设置树形控件的列的宽度
         # self.tree.setColumnWidth(0, 160)
 
-        layout.addWidget(self.tree)
-        self.treeGroupBox.setLayout(layout)
+        self.treeGrouplayout.addWidget(self.tree)
+        self.treeGroupBox.setLayout(self.treeGrouplayout)
 
     def createImgGroupBox(self):
         self.imgGroupBox = QGroupBox("手机图像")
@@ -272,16 +273,30 @@ class Example(QWidget):
         self_child.setText(0, layout_info["className"])
 
         if "childList" not in layout_info.keys() or len(layout_info) == 0:
-            return
+            return self_child
         for child_layout in layout_info['childList']:
             self.getChild(self_child, child_layout)
+        return self_child
 
     def updateTree(self, layout_info):
         # 这个是我选中其中的一个分支进行右键清空操作时进行的处理
-        for i in range(self.tree.childCount()):
-            self.tree.currentItem().removeChild(self.tree.child(0))
         print(layout_info)
-        self.getChild(self.tree, layout_info)
+
+        layout = QVBoxLayout()
+
+        self.treeGrouplayout.removeWidget(self.tree)
+        self.tree = QTreeWidget()
+        # 设置列数
+        # self.tree.setColumnCount(1)
+        # 设置树形控件头部的标题
+        self.tree.setHeaderHidden(True)
+
+        # 设置树形控件的列的宽度
+        # self.tree.setColumnWidth(0, 160)
+        self.treeGrouplayout.addWidget(self.tree)
+        # self.treeGroupBox.setLayout(layout)
+
+        self.root_child = self.getChild(self.tree, layout_info)
         self.tree.expandAll()
 
     def updateImgLayout(self):
