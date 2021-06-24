@@ -193,26 +193,6 @@ class Example(QWidget):
         # 设置树形控件的列的宽度
         # self.tree.setColumnWidth(0, 160)
 
-        # 设置根节点
-        root = QTreeWidgetItem(self.tree)
-        root.setText(0, 'root')
-
-        # 设置子节点1
-        child1 = QTreeWidgetItem(root)
-        child1.setText(0, 'child1')
-
-        cccchild1 = QTreeWidgetItem(child1)
-        cccchild1.setText(0, 'cccchild1')
-        # 设置子节点2
-        child2 = QTreeWidgetItem(root)
-        child2.setText(0, 'child2')
-        # 设置子节点3
-        child3 = QTreeWidgetItem(child2)
-        child3.setText(0, 'child3')
-
-        self.tree.addTopLevelItem(root)
-        # self.setCentralWidget(self.tree)
-        self.tree.expandAll()
         layout.addWidget(self.tree)
         self.treeGroupBox.setLayout(layout)
 
@@ -285,11 +265,24 @@ class Example(QWidget):
 
     def updateActivitys(self, activitys):
         self.activityComboBox.clear()
-        for activity in activitys:
-            self.activityComboBox.addItem(activity)
+        [self.activityComboBox.addItem(activity) for activity in activitys]
 
-    def updateTree(self):
-        pass
+    def getChild(self, root, layout_info):
+        self_child = QTreeWidgetItem(root)
+        self_child.setText(0, layout_info["className"])
+
+        if "childList" not in layout_info.keys() or len(layout_info) == 0:
+            return
+        for child_layout in layout_info['childList']:
+            self.getChild(self_child, child_layout)
+
+    def updateTree(self, layout_info):
+        # 这个是我选中其中的一个分支进行右键清空操作时进行的处理
+        for i in range(self.tree.childCount()):
+            self.tree.currentItem().removeChild(self.tree.child(0))
+        print(layout_info)
+        self.getChild(self.tree, layout_info)
+        self.tree.expandAll()
 
     def updateImgLayout(self):
         pass
@@ -309,4 +302,9 @@ class Example(QWidget):
             window_size = ADB_DEVICE.window_size()
             ADB_DEVICE.swipe(window_size[0] / 2, window_size[1] - 200,
                              window_size[0] / 2, 200, 0.2)
-        ADB_DEVICE.app_start("")
+
+        ADB_DEVICE.app_start("com.shark.uiautoapitest")
+        # shell_cmd = "cd /data/local/tmp/;su -c ./SharkInject -f -n " + appName
+        # print(shell_cmd)
+        # device_shell = ADB_DEVICE.shell(shell_cmd)
+        # print(device_shell)

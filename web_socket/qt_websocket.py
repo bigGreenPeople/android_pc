@@ -4,6 +4,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWebSockets import *
 from PyQt5 import QtWebSockets, QtNetwork
+import json
 
 
 class MyServer(QObject):
@@ -37,14 +38,16 @@ class MyServer(QObject):
 
     def processTextMessage(self, message):
         if (self.clientConnection):
-            print(message)
-            self.ex.nameLineEdit.setText(message)
-            # self.clientConnection.sendTextMessage(message)
+            message = json.loads(message)
+            if (message['type'] == "LAYOUT"):
+                layout_info = json.loads(message["message"])
+                self.ex.updateActivitys(layout_info.keys())
+                if len(layout_info.keys()) >= 1:
+                    self.ex.updateTree(layout_info[list(layout_info.keys())[0]])
 
     def processBinaryMessage(self, message):
         if (self.clientConnection):
             self.ex.updateImg(message)
-
             # self.clientConnection.sendBinaryMessage(message)
 
     def socketDisconnected(self):
