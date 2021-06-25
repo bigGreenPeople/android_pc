@@ -37,6 +37,7 @@ class Example(QWidget):
 
         # 启动app
         self.appNameEdit = None
+        self.layoutInfo = None
 
         self.timer = QTimer()  # 初始化定时器
         self.timer.timeout.connect(self.time)
@@ -245,16 +246,25 @@ class Example(QWidget):
         # self.pixMap.scaled(152, 76, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         # self.imgeLabel.setScaledContents(True)
         self.imgeLabel.setPixmap(self.pixMap)
+        self.imgeLabel.setGeometry(QRect(30, 30, 511, 541))
         # self.imgeLabel.resize(self.size().height(), QWIDGETSIZE_MAX)
 
         # self.pixMap = QPixmap("img/phone.png")
         # self.pixMap
 
-    def updateViewInfo(self, *args, **kwargs):
-        self.nameLineEdit.setText(kwargs["name"])
-        self.textLineEdit.setText(kwargs["text"])
-        self.idLineEdit.setText(kwargs["id"])
-        self.describeLineEdit.setText(kwargs["describe"])
+    def updateViewInfo(self, data):
+        self.textLineEdit.setText("")
+        self.idLineEdit.setText("")
+        self.describeLineEdit.setText("")
+        self.nameLineEdit.setText("")
+
+        self.nameLineEdit.setText(data["className"])
+        if "text" in data.keys():
+            self.textLineEdit.setText(data["text"])
+        if "id" in data.keys() and data['id'] != -1:
+            self.idLineEdit.setText(str(hex(data["id"])))
+        if "description" in data.keys():
+            self.describeLineEdit.setText(data["description"])
 
     def updateDevices(self):
         devices = adb.devices()
@@ -271,6 +281,9 @@ class Example(QWidget):
     def getChild(self, root, layout_info):
         self_child = QTreeWidgetItem(root)
         self_child.setText(0, layout_info["className"])
+        self_child.setData(0, Qt.UserRole, layout_info)
+
+        # self_child.clicked.connect(self.onClicked)
 
         if "childList" not in layout_info.keys() or len(layout_info) == 0:
             return self_child
@@ -281,6 +294,7 @@ class Example(QWidget):
     def updateTree(self, layout_info):
         # 这个是我选中其中的一个分支进行右键清空操作时进行的处理
         print(layout_info)
+        self.layoutInfo = layout_info
 
         layout = QVBoxLayout()
 
@@ -290,6 +304,7 @@ class Example(QWidget):
         # self.tree.setColumnCount(1)
         # 设置树形控件头部的标题
         self.tree.setHeaderHidden(True)
+        self.tree.clicked.connect(self.itemClick)
 
         # 设置树形控件的列的宽度
         # self.tree.setColumnWidth(0, 160)
@@ -298,6 +313,12 @@ class Example(QWidget):
 
         self.root_child = self.getChild(self.tree, layout_info)
         self.tree.expandAll()
+
+    def itemClick(self, item_child):
+        item = self.tree.currentItem()
+        data = item.data(0, Qt.UserRole)
+        # print(data)
+        self.updateViewInfo(data)
 
     def updateImgLayout(self):
         pass
