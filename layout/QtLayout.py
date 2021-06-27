@@ -38,6 +38,7 @@ class Example(QWidget):
         # 启动app
         self.appNameEdit = None
         self.layoutInfo = None
+        self.rate = 1
 
         self.timer = QTimer()  # 初始化定时器
         self.timer.timeout.connect(self.time)
@@ -195,23 +196,32 @@ class Example(QWidget):
         # 设置树形控件的列的宽度
         # self.tree.setColumnWidth(0, 160)
 
-        self.treeGrouplayout.addWidget(self.tree)
+        # self.treeGrouplayout.addWidget(self.tree)
+        self.treeScroll = QScrollArea()
+        self.treeScroll.setWidgetResizable(True)
+
+        self.treeScroll.setWidget(self.tree)
+
+        self.treeGrouplayout.addWidget(self.treeScroll)
         self.treeGroupBox.setLayout(self.treeGrouplayout)
 
     def createImgGroupBox(self):
         self.imgGroupBox = QGroupBox("手机图像")
         layout = QVBoxLayout()
-        self.imgeLabel = QLabel()
+        self.imgeLabel = MyLabel()
 
         self.pixMap = QPixmap("img/test.png")
 
         # self.imgeLabel.setScaledContents(True)
-        self.pixMap = self.pixMap.scaled(self.size().height(), 850, Qt.KeepAspectRatio,
-                                         Qt.SmoothTransformation)
+        # self.pixMap = self.pixMap.scaled(1, 800, Qt.KeepAspectRatio,
+        #                                  Qt.SmoothTransformation)
         # self.imgeLabel.setPixmap(self.pixMap)
-        self.imgeLabel.setMinimumSize(400, 400)
+        self.imgeLabel.resize(470, 500)
 
-        layout.addWidget(self.imgeLabel)
+        ##创建一个滚动条
+        self.imgeLabelscroll = QScrollArea()
+        self.imgeLabelscroll.setWidget(self.imgeLabel)
+        layout.addWidget(self.imgeLabelscroll)
         self.imgGroupBox.setLayout(layout)
 
     def cneter(self):
@@ -232,7 +242,8 @@ class Example(QWidget):
         self.statusBar().showMessage("连接设备中...")
 
     def getDeviceLayoutInfo(self):
-        self.statusBar().showMessage("获取布局信息中...")
+        # self.statusBar().showMessage("获取布局信息中...")
+        self.imgeLabel.clickNodeItem()
 
     def updateImg(self, bytes):
         # buffer = QBuffer(bytes)
@@ -246,7 +257,8 @@ class Example(QWidget):
         # self.pixMap.scaled(152, 76, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         # self.imgeLabel.setScaledContents(True)
         self.imgeLabel.setPixmap(self.pixMap)
-        self.imgeLabel.setGeometry(QRect(30, 30, 511, 541))
+        self.imgeLabel.setGeometry(QRect(0, 0, QWIDGETSIZE_MAX, 800))
+
         # self.imgeLabel.resize(self.size().height(), QWIDGETSIZE_MAX)
 
         # self.pixMap = QPixmap("img/phone.png")
@@ -257,6 +269,8 @@ class Example(QWidget):
         self.idLineEdit.setText("")
         self.describeLineEdit.setText("")
         self.nameLineEdit.setText("")
+        # print(data["id"])
+        # print(f"{data['x']}  {data['y']} ---- {data['width']}  {data['height']}")
 
         self.nameLineEdit.setText(data["className"])
         if "text" in data.keys():
@@ -293,8 +307,9 @@ class Example(QWidget):
 
     def updateTree(self, layout_info):
         # 这个是我选中其中的一个分支进行右键清空操作时进行的处理
-        print(layout_info)
+        # print(layout_info)
         self.layoutInfo = layout_info
+        self.reSizeLayout()
 
         layout = QVBoxLayout()
 
@@ -306,22 +321,57 @@ class Example(QWidget):
         self.tree.setHeaderHidden(True)
         self.tree.clicked.connect(self.itemClick)
 
+        self.treeScroll.setWidget(self.tree)
         # 设置树形控件的列的宽度
         # self.tree.setColumnWidth(0, 160)
-        self.treeGrouplayout.addWidget(self.tree)
+        # self.treeGrouplayout.addWidget(self.treeScroll)
         # self.treeGroupBox.setLayout(layout)
 
         self.root_child = self.getChild(self.tree, layout_info)
         self.tree.expandAll()
 
+        self.imgeLabel.setLayoutInfo(layout_info, self.tree, self.pixMap)
+
     def itemClick(self, item_child):
         item = self.tree.currentItem()
+
         data = item.data(0, Qt.UserRole)
         # print(data)
         self.updateViewInfo(data)
+        self.imgeLabel.setClickedNode(data)
 
     def updateImgLayout(self):
         pass
+
+    def reSizeLayout(self):
+        """
+        跳转布局大小
+        :return:
+        """
+        if "childList" in self.layoutInfo.keys():
+            list_ = self.layoutInfo["childList"]
+            self.top_height = list_[-1]["height"]
+            # self.layout_info["childList"][0]["height"] = self.layout_info["childList"][0]["height"] - self.top_height
+            self.layoutInfo["childList"] = list_[:2 - 1]
+
+        self.rate = self.pixMap.width() / float(self.layoutInfo["width"])
+
+        # 调整布局大小
+        self.reSizeNode(self.layoutInfo)
+
+    def reSizeNode(self, child_info):
+        if "width" in child_info.keys() and "height" in child_info.keys() and \
+                child_info["width"] != 0 and child_info["height"] != 0:
+            child_info['x'] = float(child_info["x"]) * self.rate
+            child_info['y'] = float(child_info["y"] - self.top_height) * self.rate
+            child_info['width'] = float(child_info["width"]) * self.rate
+            child_info['height'] = float(child_info["height"]) * self.rate
+
+        if "childList" not in child_info.keys() or len(child_info) == 0:
+            return
+
+        for child_layout in child_info['childList']:
+            self.reSizeNode(child_layout)
 
     def startApp(self):
         # 获得选择的设备
@@ -344,3 +394,155 @@ class Example(QWidget):
         # print(shell_cmd)
         # device_shell = ADB_DEVICE.shell(shell_cmd)
         # print(device_shell)
+
+
+class MyLabel(QLabel):
+    layout_info = {}
+    rate = 1.00
+    top_height = 0
+    select_node = {}
+    click_node = {}
+    treeWidget = None
+
+    def __init__(self):
+        super().__init__()
+        self.setMouseTracking(True)
+
+    def setLayoutInfo(self, layout_info, treeWidget, pixMap):
+        self.layout_info = layout_info
+        self.treeWidget = treeWidget
+
+        # # 调整布局大小
+        # self.reSizeLayOut(self.layout_info)
+        self.update()
+
+    def setSelectNode(self, node):
+        """
+        画出选择的node节点
+        :param node:
+        :return:
+        """
+        self.select_node = node
+        self.update()
+
+    def setClickedNode(self, node):
+        """
+        画出点击的node节点
+        :param node:
+        :return:
+        """
+        self.click_node = node
+        self.update()
+
+    def paintClickedChild(self):
+        """
+        绘制选择节点
+        :return:
+        """
+        if not self.click_node:
+            return
+        self.painter.setPen(QPen(Qt.red, 2, Qt.SolidLine))
+
+        rect = QRect(self.click_node["x"], self.click_node["y"],
+                     self.click_node["width"], self.click_node["height"])
+        self.painter.drawRect(rect)
+
+    def paintSelectChild(self):
+        """
+        绘制选择节点
+        :return:
+        """
+        if not self.select_node:
+            return
+        self.painter.setPen(QPen(Qt.blue, 2, Qt.SolidLine))
+
+        rect = QRect(self.select_node["x"], self.select_node["y"],
+                     self.select_node["width"], self.select_node["height"])
+        self.painter.drawRect(rect)
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        self.painter = QPainter()
+        self.painter.begin(self)
+
+        self.painter.setPen(QPen(Qt.red, 1, Qt.DotLine))
+        # 自定义绘制方法
+        self.drawRect(self.layout_info, self.painter)
+        self.paintSelectChild()
+        self.paintClickedChild()
+        self.painter.end()
+
+    def drawRect(self, child_info, qp):
+        # 绘制
+        if "width" in child_info.keys() and "height" in child_info.keys() and \
+                child_info["width"] != 0 and child_info["height"] != 0:
+            # print(
+            #     f"{child_info['id']}  {child_info['x']}  {child_info['y']} ---- {child_info['width']}  {child_info['height']}")
+            rect = QRect(child_info["x"], child_info["y"],
+                         child_info["width"], child_info["height"])
+            qp.drawRect(rect)
+
+        if "childList" not in child_info.keys() or len(child_info) == 0:
+            return
+
+        for child_layout in child_info['childList']:
+            self.drawRect(child_layout, qp)
+
+        # 重写鼠标单击事件
+
+    def mousePressEvent(self, event):  # 单击
+        x = event.x()
+        y = event.y()
+
+        iterator = QTreeWidgetItemIterator(self.treeWidget)
+        while iterator.value():
+            item = iterator.value()
+            data = item.data(0, Qt.UserRole)
+            if "width" in data.keys() and "height" in data.keys() and \
+                    data["width"] != 0 and data["height"] != 0:
+                if self.isInRect(x, y, data):
+                    # print(data)
+                    self.treeWidget.setCurrentItem(item)
+                    from_item = self.treeWidget.indexFromItem(item)
+                    self.treeWidget.clicked.emit(from_item)
+                    # self.setSelectNode(data)
+            iterator.__iadd__(1)
+
+    # 鼠标移动事件
+    def mouseMoveEvent(self, event):
+        x = event.x()
+        y = event.y()
+        # print(f"x:{x} y:{y}")
+        self.clickNodeItem(x, y)
+
+    def clickNodeItem(self, x, y):
+        iterator = QTreeWidgetItemIterator(self.treeWidget)
+        while iterator.value():
+            item = iterator.value()
+            data = item.data(0, Qt.UserRole)
+            if "width" in data.keys() and "height" in data.keys() and \
+                    data["width"] != 0 and data["height"] != 0:
+                if self.isInRect(x, y, data):
+                    # print(data)
+                    # self.treeWidget.setCurrentItem(item)
+                    # from_item = self.treeWidget.indexFromItem(item)
+                    # self.treeWidget.clicked.emit(from_item)
+                    self.setSelectNode(data)
+
+            iterator.__iadd__(1)
+
+    def isInRect(self, x, y, child_info):
+        """
+        判断xy是否在此节点中
+        :param x:
+        :param y:
+        :param child_info: 节点信息
+        :return: bool
+        """
+        # 计算存在child_info x的范围
+        if "width" in child_info.keys() and "height" in child_info.keys() and \
+                child_info["width"] != 0 and child_info["height"] != 0:
+            if child_info['x'] < x < (child_info['x'] + child_info['width']) \
+                    and child_info['y'] < y < (child_info['y'] + child_info['height']):
+                return True
+        return False
