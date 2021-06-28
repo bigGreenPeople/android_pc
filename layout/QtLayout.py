@@ -1,3 +1,5 @@
+import json
+
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -22,6 +24,7 @@ class Example(QWidget):
         # 描述
         self.describeLineEdit = None
 
+        self.serve = None
         # 设备列表
         self.selectDeviceComboBox = None
         # 窗口列表
@@ -46,6 +49,9 @@ class Example(QWidget):
         self.timer.start(1000)
 
         self.initUI()
+
+    def setServe(self, serve):
+        self.serve = serve
 
     def time(self):
         devices = adb.devices()
@@ -243,7 +249,13 @@ class Example(QWidget):
 
     def getDeviceLayoutInfo(self):
         # self.statusBar().showMessage("获取布局信息中...")
-        self.imgeLabel.clickNodeItem()
+        send_message = {
+            "id": 0,
+            "type": "GET_LAYOUT_IMG",
+            "message": ""
+        }
+        send_message = json.dumps(send_message)
+        self.serve.sendMessage(send_message)
 
     def updateImg(self, bytes):
         # buffer = QBuffer(bytes)
@@ -259,8 +271,14 @@ class Example(QWidget):
         self.imgeLabel.setPixmap(self.pixMap)
         self.imgeLabel.setGeometry(QRect(0, 0, QWIDGETSIZE_MAX, 800))
 
+        send_message = {
+            "id": 0,
+            "type": "GET_LAYOUT",
+            "message": ""
+        }
+        send_message = json.dumps(send_message)
+        self.serve.sendMessage(send_message)
         # self.imgeLabel.resize(self.size().height(), QWIDGETSIZE_MAX)
-
         # self.pixMap = QPixmap("img/phone.png")
         # self.pixMap
 

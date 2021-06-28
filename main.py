@@ -24,14 +24,18 @@ class MainWindow(QMainWindow):
         ex = Example()
         self.setCentralWidget(ex)
         server = MyServer(serverObject, ex)
+        ex.setServe(server)
 
         self.resize(1200, 900)
 
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    serverObject = QWebSocketServer('My Socket', QWebSocketServer.NonSecureMode)
-    serverObject.closed.connect(app.quit)
-    window = MainWindow()
-    window.show()
-    sys.exit(app.exec_())
+    try:
+        app = QApplication(sys.argv)
+        serverObject = QWebSocketServer('My Socket', QWebSocketServer.NonSecureMode)
+        serverObject.closed.connect(app.quit)
+        window = MainWindow()
+        window.show()
+        sys.exit(app.exec_())
+    except Exception as e:
+        print(e)
