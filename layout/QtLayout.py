@@ -87,14 +87,9 @@ class Example(QWidget):
         :param text:
         :return:
         """
-        print(text)
         index = self.activityComboBox.currentIndex()
-        print(index)
         self.updateImg(self.img_list[index])
-
-        print(self.layout_list[text])
         self.updateTree(self.layout_list[text])
-
 
     def initUI(self):
         self.createGridGroupBox()
@@ -244,7 +239,7 @@ class Example(QWidget):
         # self.pixMap = self.pixMap.scaled(1, 800, Qt.KeepAspectRatio,
         #                                  Qt.SmoothTransformation)
         # self.imgeLabel.setPixmap(self.pixMap)
-        self.imgeLabel.resize(470, 500)
+        self.imgeLabel.resize(470, 0)
 
         ##创建一个滚动条
         self.imgeLabelscroll = QScrollArea()
@@ -298,6 +293,11 @@ class Example(QWidget):
 
     def saveLayout(self, layout):
         self.layout_list = layout
+        for key in self.layout_list:
+            self.reSizeLayout(self.layout_list[key])
+        # 选择第一个
+        self.updateImg(self.img_list[0])
+        self.updateTree(list(self.layout_list.values())[0])
 
     def updateImg(self, bytes):
         """
@@ -311,7 +311,11 @@ class Example(QWidget):
         self.imgeLabel.setPixmap(self.pixMap)
         self.imgeLabel.setGeometry(QRect(0, 0, QWIDGETSIZE_MAX, 800))
 
-        # TODO 什么时候发送获取布局信息的请求?
+    def imgGetEnd(self):
+        """
+        图片发送完毕接收布局信息
+        :return:
+        """
         send_message = {
             "id": 0,
             "type": "GET_LAYOUT",
@@ -365,8 +369,6 @@ class Example(QWidget):
         # 这个是我选中其中的一个分支进行右键清空操作时进行的处理
         # print(layout_info)
         self.layoutInfo = layout_info
-        self.reSizeLayout()
-
         layout = QVBoxLayout()
 
         self.treeGrouplayout.removeWidget(self.tree)
@@ -380,7 +382,7 @@ class Example(QWidget):
         self.root_child = self.getChild(self.tree, layout_info)
         self.tree.expandAll()
 
-        self.imgeLabel.setLayoutInfo(layout_info, self.tree, self.pixMap)
+        self.imgeLabel.setLayoutInfo(layout_info, self.tree)
 
     def itemClick(self, item_child):
         item = self.tree.currentItem()
@@ -393,21 +395,19 @@ class Example(QWidget):
     def updateImgLayout(self):
         pass
 
-    def reSizeLayout(self):
+    def reSizeLayout(self, layoutInfo):
         """
-        跳转布局大小
+        调整布局大小
         :return:
         """
-        if "childList" in self.layoutInfo.keys():
-            list_ = self.layoutInfo["childList"]
+        if "childList" in layoutInfo.keys():
+            list_ = layoutInfo["childList"]
             self.top_height = list_[-1]["height"]
-            # self.layout_info["childList"][0]["height"] = self.layout_info["childList"][0]["height"] - self.top_height
-            self.layoutInfo["childList"] = list_[:2 - 1]
-
-        self.rate = self.pixMap.width() / float(self.layoutInfo["width"])
-
+            layoutInfo["childList"] = list_[:2 - 1]
+        #         self.rate = self.pixMap.width() / float(layoutInfo["width"])
+        self.rate = 499 / float(layoutInfo["width"])
         # 调整布局大小
-        self.reSizeNode(self.layoutInfo)
+        self.reSizeNode(layoutInfo)
 
     def reSizeNode(self, child_info):
         if "width" in child_info.keys() and "height" in child_info.keys() and \
@@ -458,10 +458,12 @@ class MyLabel(QLabel):
         super().__init__()
         self.setMouseTracking(True)
 
-    def setLayoutInfo(self, layout_info, treeWidget, pixMap):
+    def setLayoutInfo(self, layout_info, treeWidget):
         self.layout_info = layout_info
+        # print(self.layout_info)
         self.treeWidget = treeWidget
-
+        self.select_node = {}
+        self.click_node = {}
         # # 调整布局大小
         # self.reSizeLayOut(self.layout_info)
         self.update()

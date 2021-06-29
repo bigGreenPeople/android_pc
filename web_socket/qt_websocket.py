@@ -41,10 +41,12 @@ class MyServer(QObject):
     def processTextMessage(self, message):
         if (self.clientConnection):
             message = json.loads(message)
-            if (message['type'] == "LAYOUT"):
+            if message['type'] == "LAYOUT":
                 layout_info = json.loads(message["message"])
                 self.ex.saveLayout(layout_info)
                 self.ex.updateActivitys(layout_info.keys())
+            elif message['type'] == "GET_LAYOUT_IMG_END":
+                self.ex.imgGetEnd()
                 # 显示左后的布局
                 # if len(layout_info.keys()) >= 1:
                 #     self.ex.updateTree(layout_info[list(layout_info.keys())[0]])
