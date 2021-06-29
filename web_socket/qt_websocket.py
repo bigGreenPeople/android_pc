@@ -8,9 +8,10 @@ import json
 
 
 class MyServer(QObject):
-    def __init__(self, parent, ex):
+    def __init__(self, parent, ex, status):
         super(QObject, self).__init__(parent)
 
+        self.status = status
         self.ex = ex
         self.clients = []
         self.server = QWebSocketServer(parent.serverName(), parent.secureMode(), parent)
@@ -30,8 +31,9 @@ class MyServer(QObject):
 
         self.clientConnection.binaryMessageReceived.connect(self.processBinaryMessage)
         self.clientConnection.disconnected.connect(self.socketDisconnected)
-
         self.clients.append(self.clientConnection)
+        self.ex.setConnected(True)
+        self.status.showMessage('设备已连接')
 
     def sendMessage(self, message):
         self.clientConnection.sendTextMessage(message)
@@ -41,16 +43,21 @@ class MyServer(QObject):
             message = json.loads(message)
             if (message['type'] == "LAYOUT"):
                 layout_info = json.loads(message["message"])
+                self.ex.saveLayout(layout_info)
                 self.ex.updateActivitys(layout_info.keys())
-                if len(layout_info.keys()) >= 1:
-                    self.ex.updateTree(layout_info[list(layout_info.keys())[0]])
+                # 显示左后的布局
+                # if len(layout_info.keys()) >= 1:
+                #     self.ex.updateTree(layout_info[list(layout_info.keys())[0]])
 
     def processBinaryMessage(self, message):
         if (self.clientConnection):
-            self.ex.updateImg(message)
+            self.ex.saveImg(message)
+            # self.ex.updateImg(message)
             # self.clientConnection.sendBinaryMessage(message)
 
     def socketDisconnected(self):
         if (self.clientConnection):
             self.clients.remove(self.clientConnection)
             self.clientConnection.deleteLater()
+            self.ex.setConnected(False)
+            self.status.showMessage('设备已断开')

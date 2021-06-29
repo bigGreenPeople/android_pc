@@ -48,7 +48,15 @@ class Example(QWidget):
         self.timerExec = True
         self.timer.start(1000)
 
+        # 图片
+        self.img_list = []
+        self.layout_list = {}
+
         self.initUI()
+        self.connected = False
+
+    def setConnected(self, connected):
+        self.connected = connected
 
     def setServe(self, serve):
         self.serve = serve
@@ -66,7 +74,27 @@ class Example(QWidget):
                     break
 
     def selectDeviceOnActivated(self, text):
+        """
+        下拉选择设备
+        :param text:
+        :return:
+        """
         self.timerExec = True
+
+    def selectActivityOnActivated(self, text):
+        """
+        下拉选择activity
+        :param text:
+        :return:
+        """
+        print(text)
+        index = self.activityComboBox.currentIndex()
+        print(index)
+        self.updateImg(self.img_list[index])
+
+        print(self.layout_list[text])
+        self.updateTree(self.layout_list[text])
+
 
     def initUI(self):
         self.createGridGroupBox()
@@ -138,7 +166,6 @@ class Example(QWidget):
 
         self.selectDeviceComboBox = QComboBox()
         self.selectDeviceComboBox.activated[str].connect(self.selectDeviceOnActivated)
-        # self.selectDeviceComboBox.highlighted.connect(self.selectDeviceHighlighted)
 
         self.selectDeviceComboBox.clear()
         for d in adb.devices():
@@ -175,19 +202,14 @@ class Example(QWidget):
         activityLabel.setAlignment(Qt.AlignBottom)
 
         self.activityComboBox = QComboBox()
-        self.activityComboBox.addItem("Activity1")
-        self.activityComboBox.addItem("Activity2")
+        self.activityComboBox.activated[str].connect(self.selectActivityOnActivated)
 
         layout3.addWidget(activityLabel, 5, 0, 1, 1)
         layout3.addWidget(self.activityComboBox, 5, 1, 1, 2)
-        # layout.addWidget(imgeLabel, 0, 2, 4, 1)
-        # layout.setColumnStretch(1, 10)
-        # self.gridGroupBox.resize(100, 100)
         self.gridInfoGroupBox.setMaximumSize(300, QWIDGETSIZE_MAX)
         self.gridOpGroupBox.setLayout(layout3)
         self.gridConnectGroupBox.setLayout(layout2)
         self.gridInfoGroupBox.setLayout(layout)
-        # self.setWindowTitle('Basic Layout')
 
     def createTreeGroupBox(self):
         self.treeGroupBox = QGroupBox("布局结构")
@@ -249,6 +271,16 @@ class Example(QWidget):
 
     def getDeviceLayoutInfo(self):
         # self.statusBar().showMessage("获取布局信息中...")
+        if not self.connected:
+            qMessageBox = QMessageBox(QMessageBox.Warning, "警告", "设备未连接")
+            # button = qMessageBox.button(QMessageBox.Yes)
+            # button.setText("了解")
+            Qyes = qMessageBox.addButton(self.tr("了解"), QMessageBox.YesRole)
+
+            qMessageBox.exec_()
+
+            # qMessageBox.information(self, "Text", "设备未连接", QMessageBox.Yes)
+            return
         send_message = {
             "id": 0,
             "type": "GET_LAYOUT_IMG",
@@ -257,20 +289,29 @@ class Example(QWidget):
         send_message = json.dumps(send_message)
         self.serve.sendMessage(send_message)
 
-    def updateImg(self, bytes):
-        # buffer = QBuffer(bytes)
-        # print(self.pixMap)
-        # buffer.open(QIODevice.WriteOnly)
+    def saveImg(self, bytes):
+        """
+        存储客户端图片
+        :return:
+        """
+        self.img_list.append(bytes)
 
+    def saveLayout(self, layout):
+        self.layout_list = layout
+
+    def updateImg(self, bytes):
+        """
+        更新图片
+        :param bytes:
+        :return:
+        """
         self.pixMap.loadFromData(bytes)
-        # self.pixMap.save("img/test.png")
         self.pixMap = self.pixMap.scaled(QWIDGETSIZE_MAX, 800, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
-        # self.pixMap.scaled(152, 76, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        # self.imgeLabel.setScaledContents(True)
         self.imgeLabel.setPixmap(self.pixMap)
         self.imgeLabel.setGeometry(QRect(0, 0, QWIDGETSIZE_MAX, 800))
 
+        # TODO 什么时候发送获取布局信息的请求?
         send_message = {
             "id": 0,
             "type": "GET_LAYOUT",
@@ -278,9 +319,6 @@ class Example(QWidget):
         }
         send_message = json.dumps(send_message)
         self.serve.sendMessage(send_message)
-        # self.imgeLabel.resize(self.size().height(), QWIDGETSIZE_MAX)
-        # self.pixMap = QPixmap("img/phone.png")
-        # self.pixMap
 
     def updateViewInfo(self, data):
         self.textLineEdit.setText("")
@@ -333,17 +371,11 @@ class Example(QWidget):
 
         self.treeGrouplayout.removeWidget(self.tree)
         self.tree = QTreeWidget()
-        # 设置列数
-        # self.tree.setColumnCount(1)
         # 设置树形控件头部的标题
         self.tree.setHeaderHidden(True)
         self.tree.clicked.connect(self.itemClick)
 
         self.treeScroll.setWidget(self.tree)
-        # 设置树形控件的列的宽度
-        # self.tree.setColumnWidth(0, 160)
-        # self.treeGrouplayout.addWidget(self.treeScroll)
-        # self.treeGroupBox.setLayout(layout)
 
         self.root_child = self.getChild(self.tree, layout_info)
         self.tree.expandAll()
@@ -509,6 +541,8 @@ class MyLabel(QLabel):
         # 重写鼠标单击事件
 
     def mousePressEvent(self, event):  # 单击
+        if not self.layout_info:
+            return
         x = event.x()
         y = event.y()
 
@@ -528,6 +562,8 @@ class MyLabel(QLabel):
 
     # 鼠标移动事件
     def mouseMoveEvent(self, event):
+        if not self.layout_info:
+            return
         x = event.x()
         y = event.y()
         # print(f"x:{x} y:{y}")

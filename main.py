@@ -23,7 +23,7 @@ class MainWindow(QMainWindow):
         self.status.showMessage('就绪')
         ex = Example()
         self.setCentralWidget(ex)
-        server = MyServer(serverObject, ex)
+        server = MyServer(serverObject, ex,self.status)
         ex.setServe(server)
 
         self.resize(1200, 900)
