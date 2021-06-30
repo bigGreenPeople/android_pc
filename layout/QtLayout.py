@@ -214,13 +214,14 @@ class Example(QWidget):
         # 设置列数
         # self.tree.setColumnCount(1)
         # 设置树形控件头部的标题
-        self.tree.setHeaderHidden(True)
-        self_child1 = QTreeWidgetItem(self.tree)
-        self_child1.setText(0, "dsasdadsadsadadadsaddsasdadsadsadadadsaddsasdadsadsadadadsad")
-
+        # self.tree.setHeaderHidden(True)
         # 设置树形控件的列的宽度
-        # self.tree.setColumnWidth(0, 160)
-
+        # self.tree.setColumnWidth(0, 600)
+        self.tree.header().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.tree.header().setStretchLastSection(False)
+        # self.tree.header().setSectionResizeMode(0, QAbstractItemView.ExpandingState)
+        # self_child1 = QTreeWidgetItem(self.tree)
+        # self_child1.setText(0, "dsasdadsadsadadadsaddsasdadsadsadadadsaddsasdadsadsadadadsad")
         # self.treeGrouplayout.addWidget(self.tree)
         self.treeScroll = QScrollArea()
         self.treeScroll.setWidgetResizable(True)
@@ -375,6 +376,8 @@ class Example(QWidget):
 
         self.treeGrouplayout.removeWidget(self.tree)
         self.tree = QTreeWidget()
+        self.tree.header().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.tree.header().setStretchLastSection(False)
         # 设置树形控件头部的标题
         self.tree.setHeaderHidden(True)
         self.tree.clicked.connect(self.itemClick)
