@@ -215,16 +215,18 @@ class Example(QWidget):
         # self.tree.setColumnCount(1)
         # 设置树形控件头部的标题
         self.tree.setHeaderHidden(True)
+        self_child1 = QTreeWidgetItem(self.tree)
+        self_child1.setText(0, "dsasdadsadsadadadsaddsasdadsadsadadadsaddsasdadsadsadadadsad")
 
         # 设置树形控件的列的宽度
-        self.tree.setColumnWidth(0, 160)
-
-        self.treeGrouplayout.addWidget(self.tree)
-        # self.treeScroll = QScrollArea()
-        # self.treeScroll.setWidgetResizable(True)
-        # self.treeScroll.setWidget(self.tree)
+        # self.tree.setColumnWidth(0, 160)
 
         # self.treeGrouplayout.addWidget(self.tree)
+        self.treeScroll = QScrollArea()
+        self.treeScroll.setWidgetResizable(True)
+        self.treeScroll.setWidget(self.tree)
+
+        self.treeGrouplayout.addWidget(self.treeScroll)
         self.treeGroupBox.setLayout(self.treeGrouplayout)
 
     def createImgGroupBox(self):
