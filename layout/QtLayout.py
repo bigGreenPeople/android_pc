@@ -217,15 +217,14 @@ class Example(QWidget):
         self.tree.setHeaderHidden(True)
 
         # 设置树形控件的列的宽度
-        # self.tree.setColumnWidth(0, 160)
+        self.tree.setColumnWidth(0, 160)
+
+        self.treeGrouplayout.addWidget(self.tree)
+        # self.treeScroll = QScrollArea()
+        # self.treeScroll.setWidgetResizable(True)
+        # self.treeScroll.setWidget(self.tree)
 
         # self.treeGrouplayout.addWidget(self.tree)
-        self.treeScroll = QScrollArea()
-        self.treeScroll.setWidgetResizable(True)
-
-        self.treeScroll.setWidget(self.tree)
-
-        self.treeGrouplayout.addWidget(self.treeScroll)
         self.treeGroupBox.setLayout(self.treeGrouplayout)
 
     def createImgGroupBox(self):
@@ -239,10 +238,11 @@ class Example(QWidget):
         # self.pixMap = self.pixMap.scaled(1, 800, Qt.KeepAspectRatio,
         #                                  Qt.SmoothTransformation)
         # self.imgeLabel.setPixmap(self.pixMap)
-        self.imgeLabel.resize(470, 0)
+        self.imgeLabel.resize(410, 0)
 
         ##创建一个滚动条
         self.imgeLabelscroll = QScrollArea()
+        # self.imgeLabelscroll.setBackgroundRole(QPalette.Dark)
         self.imgeLabelscroll.setWidget(self.imgeLabel)
         layout.addWidget(self.imgeLabelscroll)
         self.imgGroupBox.setLayout(layout)
@@ -309,7 +309,7 @@ class Example(QWidget):
         self.pixMap = self.pixMap.scaled(QWIDGETSIZE_MAX, 800, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
         self.imgeLabel.setPixmap(self.pixMap)
-        self.imgeLabel.setGeometry(QRect(0, 0, QWIDGETSIZE_MAX, 800))
+        self.imgeLabel.setGeometry(QRect(0, 0, self.pixMap.width(), 800))
 
     def imgGetEnd(self):
         """
