@@ -214,7 +214,7 @@ class Example(QWidget):
         # 设置列数
         # self.tree.setColumnCount(1)
         # 设置树形控件头部的标题
-        # self.tree.setHeaderHidden(True)
+        self.tree.setHeaderHidden(True)
         # 设置树形控件的列的宽度
         # self.tree.setColumnWidth(0, 600)
         self.tree.header().setSectionResizeMode(QHeaderView.ResizeToContents)
