@@ -280,7 +280,7 @@ class Example(QWidget):
             # qMessageBox.information(self, "Text", "设备未连接", QMessageBox.Yes)
             return
 
-        self.img_list = []
+        self.img_list.clear()
         send_message = {
             "id": 0,
             "type": "GET_LAYOUT_IMG",
