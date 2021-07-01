@@ -53,6 +53,8 @@ class MyServer(QObject):
 
     def processBinaryMessage(self, message):
         if (self.clientConnection):
+            # print("接收图片")
+            # 清空当前图片
             self.ex.saveImg(message)
             # self.ex.updateImg(message)
             # self.clientConnection.sendBinaryMessage(message)
