@@ -44,6 +44,7 @@ class Example(QWidget):
         self.appNameEdit = None
         self.layoutInfo = None
         self.rate = 1
+        self.layout_move_y = 0
 
         self.timer = QTimer()  # 初始化定时器
         self.timer.timeout.connect(self.time)
@@ -409,11 +410,12 @@ class Example(QWidget):
         调整布局大小
         :return:
         """
-        if "childList" in layoutInfo.keys():
-            list_ = layoutInfo["childList"]
-            self.top_height = list_[-1]["height"]
-            layoutInfo["childList"] = list_[:2 - 1]
-                # self.rate = self.pixMap.width() / float(layoutInfo["width"])
+        # if "childList" in layoutInfo.keys():
+        #     list_ = layoutInfo["childList"]
+        #     self.top_height = list_[-1]["height"]
+        #     layoutInfo["childList"] = list_[:2 - 1]
+        # self.rate = self.pixMap.width() / float(layoutInfo["width"])
+        self.layout_move_y = layoutInfo['y']
         self.rate = 499 / float(layoutInfo["width"])
         # 调整布局大小
         self.reSizeNode(layoutInfo)
@@ -422,7 +424,7 @@ class Example(QWidget):
         if "width" in child_info.keys() and "height" in child_info.keys() and \
                 child_info["width"] != 0 and child_info["height"] != 0:
             child_info['x'] = float(child_info["x"]) * self.rate
-            child_info['y'] = float(child_info["y"] - self.top_height) * self.rate
+            child_info['y'] = float(child_info["y"]) * self.rate
             child_info['width'] = float(child_info["width"]) * self.rate
             child_info['height'] = float(child_info["height"]) * self.rate
 
@@ -583,6 +585,7 @@ class MyLabel(QLabel):
         if min_hypotenuse != sys.maxsize:
             # print("min_hypotenuse != sys.maxsize:")
             self.treeWidget.clicked.emit(should_clicked)
+
     # 鼠标移动事件
     def mouseMoveEvent(self, event):
         if not self.layout_info:
