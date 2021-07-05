@@ -581,7 +581,7 @@ class MyLabel(QLabel):
                     # self.setSelectNode(data)
             iterator.__iadd__(1)
         if min_hypotenuse != sys.maxsize:
-            print("min_hypotenuse != sys.maxsize:")
+            # print("min_hypotenuse != sys.maxsize:")
             self.treeWidget.clicked.emit(should_clicked)
     # 鼠标移动事件
     def mouseMoveEvent(self, event):
@@ -593,6 +593,8 @@ class MyLabel(QLabel):
         self.clickNodeItem(x, y)
 
     def clickNodeItem(self, x, y):
+        min_hypotenuse = sys.maxsize
+        should_data = None
         iterator = QTreeWidgetItemIterator(self.treeWidget)
         while iterator.value():
             item = iterator.value()
@@ -600,13 +602,14 @@ class MyLabel(QLabel):
             if "width" in data.keys() and "height" in data.keys() and \
                     data["width"] != 0 and data["height"] != 0:
                 if self.isInRect(x, y, data):
-                    # print(data)
-                    # self.treeWidget.setCurrentItem(item)
-                    # from_item = self.treeWidget.indexFromItem(item)
-                    # self.treeWidget.clicked.emit(from_item)
-                    self.setSelectNode(data)
-
+                    hypotenuse = math.pow(x - data['x'], 2) + math.pow(y - data['y'], 2)
+                    real_hypotenuse = math.sqrt(hypotenuse)
+                    if min_hypotenuse >= real_hypotenuse:
+                        min_hypotenuse = real_hypotenuse
+                        should_data = data
             iterator.__iadd__(1)
+        if min_hypotenuse != sys.maxsize:
+            self.setSelectNode(should_data)
 
     def isInRect(self, x, y, child_info):
         """
