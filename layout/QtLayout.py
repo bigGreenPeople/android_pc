@@ -6,6 +6,8 @@ from PyQt5.QtGui import *
 from PyQt5 import QtWebSockets, QtNetwork
 from PyQt5.QtWebSockets import *
 from adbutils import adb
+import math
+import sys
 
 DEVICES_SOCKET = {}
 ADB_DEVICE = None
@@ -411,7 +413,7 @@ class Example(QWidget):
             list_ = layoutInfo["childList"]
             self.top_height = list_[-1]["height"]
             layoutInfo["childList"] = list_[:2 - 1]
-        #         self.rate = self.pixMap.width() / float(layoutInfo["width"])
+                # self.rate = self.pixMap.width() / float(layoutInfo["width"])
         self.rate = 499 / float(layoutInfo["width"])
         # 调整布局大小
         self.reSizeNode(layoutInfo)
@@ -446,11 +448,13 @@ class Example(QWidget):
             ADB_DEVICE.swipe(window_size[0] / 2, window_size[1] - 200,
                              window_size[0] / 2, 200, 0.2)
 
-        ADB_DEVICE.app_start("com.shark.uiautoapitest")
-        # shell_cmd = "cd /data/local/tmp/;su -c ./SharkInject -f -n " + appName
-        # print(shell_cmd)
-        # device_shell = ADB_DEVICE.shell(shell_cmd)
-        # print(device_shell)
+        # ADB_DEVICE.app_start("com.shark.uiautoapitest")
+        shell_cmd = "cd /data/local/tmp/;su -c ./SharkInject -f -n " + appName
+        shell_cmd = "cd /data/local/tmp/;su -c ./SharkInject -f -n com.ss.android.ugc.aweme"
+
+        print(shell_cmd)
+        device_shell = ADB_DEVICE.shell(shell_cmd)
+        print(device_shell)
 
 
 class MyLabel(QLabel):
@@ -556,6 +560,10 @@ class MyLabel(QLabel):
         y = event.y()
 
         iterator = QTreeWidgetItemIterator(self.treeWidget)
+
+        min_hypotenuse = sys.maxsize
+        should_clicked = None
+
         while iterator.value():
             item = iterator.value()
             data = item.data(0, Qt.UserRole)
@@ -563,12 +571,18 @@ class MyLabel(QLabel):
                     data["width"] != 0 and data["height"] != 0:
                 if self.isInRect(x, y, data):
                     # print(data)
-                    self.treeWidget.setCurrentItem(item)
-                    from_item = self.treeWidget.indexFromItem(item)
-                    self.treeWidget.clicked.emit(from_item)
+                    hypotenuse = math.pow(x - data['x'], 2) + math.pow(y - data['y'], 2)
+                    real_hypotenuse = math.sqrt(hypotenuse)
+                    if min_hypotenuse >= real_hypotenuse:
+                        min_hypotenuse = real_hypotenuse
+                        self.treeWidget.setCurrentItem(item)
+                        should_clicked = self.treeWidget.indexFromItem(item)
+                        # self.treeWidget.clicked.emit(from_item)
                     # self.setSelectNode(data)
             iterator.__iadd__(1)
-
+        if min_hypotenuse != sys.maxsize:
+            print("min_hypotenuse != sys.maxsize:")
+            self.treeWidget.clicked.emit(should_clicked)
     # 鼠标移动事件
     def mouseMoveEvent(self, event):
         if not self.layout_info:
