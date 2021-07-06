@@ -398,7 +398,7 @@ class Example(QWidget):
         item = self.tree.currentItem()
 
         data = item.data(0, Qt.UserRole)
-        # print(data)
+        print(data)
         self.updateViewInfo(data)
         self.imgeLabel.setClickedNode(data)
 
@@ -540,7 +540,7 @@ class MyLabel(QLabel):
     def drawRect(self, child_info, qp):
         # 绘制
         if "width" in child_info.keys() and "height" in child_info.keys() and \
-                child_info["width"] != 0 and child_info["height"] != 0:
+                child_info["width"] != 0 and child_info["height"] != 0 and child_info["shown"]:
             # print(
             #     f"{child_info['id']}  {child_info['x']}  {child_info['y']} ---- {child_info['width']}  {child_info['height']}")
             rect = QRect(child_info["x"], child_info["y"],
@@ -624,7 +624,7 @@ class MyLabel(QLabel):
         """
         # 计算存在child_info x的范围
         if "width" in child_info.keys() and "height" in child_info.keys() and \
-                child_info["width"] != 0 and child_info["height"] != 0:
+                child_info["width"] != 0 and child_info["height"] != 0 and child_info["shown"]:
             if child_info['x'] < x < (child_info['x'] + child_info['width']) \
                     and child_info['y'] < y < (child_info['y'] + child_info['height']):
                 return True
