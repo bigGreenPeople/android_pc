@@ -91,8 +91,17 @@ class Example(QWidget):
         :return:
         """
         index = self.activityComboBox.currentIndex()
-        self.updateImg(self.img_list[index])
-        self.updateTree(self.layout_list[text])
+        if not str(text).endswith("0"):
+            print(self.layout_list[text])
+
+            self.updateImg(self.img_list[index], self.layout_list[text]["height"])
+            self.reSizeLayoutXy(self.layout_list[text])
+            self.updateTree(self.layout_list[text])
+        else:
+            self.updateImg(self.img_list[index])
+            self.updateTree(self.layout_list[text])
+
+        print(self.layout_list[text])
 
     def initUI(self):
         self.createGridGroupBox()
@@ -307,17 +316,17 @@ class Example(QWidget):
         self.updateImg(self.img_list[0])
         self.updateTree(list(self.layout_list.values())[0])
 
-    def updateImg(self, bytes):
+    def updateImg(self, bytes, height=800):
         """
         更新图片
         :param bytes:
         :return:
         """
         self.pixMap.loadFromData(bytes)
-        self.pixMap = self.pixMap.scaled(QWIDGETSIZE_MAX, 800, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.pixMap = self.pixMap.scaled(QWIDGETSIZE_MAX, height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
         self.imgeLabel.setPixmap(self.pixMap)
-        self.imgeLabel.setGeometry(QRect(0, 0, self.pixMap.width(), 800))
+        self.imgeLabel.setGeometry(QRect(0, 0, self.pixMap.width(), self.pixMap.height()))
 
     def imgGetEnd(self):
         """
@@ -405,6 +414,23 @@ class Example(QWidget):
     def updateImgLayout(self):
         pass
 
+    def reSizeLayoutXy(self, layoutInfo):
+        sub_x = layoutInfo["x"]
+        sub_y = layoutInfo["y"]
+        self.reSizeNodeXy(layoutInfo, sub_x, sub_y)
+
+    def reSizeNodeXy(self, child_info, sub_x, sub_y):
+        if "width" in child_info.keys() and "height" in child_info.keys() and \
+                child_info["width"] != 0 and child_info["height"] != 0:
+            child_info['x'] = float(child_info["x"]) - sub_x
+            child_info['y'] = float(child_info["y"]) - sub_y
+
+        if "childList" not in child_info.keys() or len(child_info) == 0:
+            return
+
+        for child_layout in child_info['childList']:
+            self.reSizeNodeXy(child_layout, sub_x, sub_y)
+
     def reSizeLayout(self, layoutInfo):
         """
         调整布局大小
@@ -416,7 +442,8 @@ class Example(QWidget):
         #     layoutInfo["childList"] = list_[:2 - 1]
         # self.rate = self.pixMap.width() / float(layoutInfo["width"])
         self.layout_move_y = layoutInfo['y']
-        self.rate = 499 / float(layoutInfo["width"])
+        if self.rate == 1:
+            self.rate = 499 / float(layoutInfo["width"])
         # 调整布局大小
         self.reSizeNode(layoutInfo)
 
