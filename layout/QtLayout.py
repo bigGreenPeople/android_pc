@@ -310,10 +310,12 @@ class Example(QWidget):
 
     def saveLayout(self, layout):
         self.layout_list = layout
-        for key in self.layout_list:
-            self.reSizeLayout(self.layout_list[key])
         # 选择第一个
         self.updateImg(self.img_list[0])
+
+        for key in self.layout_list:
+            self.reSizeLayout(self.layout_list[key])
+
         self.updateTree(list(self.layout_list.values())[0])
 
     def updateImg(self, bytes, height=800):
@@ -322,10 +324,14 @@ class Example(QWidget):
         :param bytes:
         :return:
         """
+
         self.pixMap.loadFromData(bytes)
         self.pixMap = self.pixMap.scaled(QWIDGETSIZE_MAX, height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
         self.imgeLabel.setPixmap(self.pixMap)
+        print(f"pixMap width: {self.pixMap.width()}")
+        print(f"pixMap height: {self.pixMap.height()}")
+
         self.imgeLabel.setGeometry(QRect(0, 0, self.pixMap.width(), self.pixMap.height()))
 
     def imgGetEnd(self):
@@ -443,7 +449,7 @@ class Example(QWidget):
         # self.rate = self.pixMap.width() / float(layoutInfo["width"])
         self.layout_move_y = layoutInfo['y']
         if self.rate == 1:
-            self.rate = 499 / float(layoutInfo["width"])
+            self.rate = self.pixMap.width()  / float(layoutInfo["width"])
         # 调整布局大小
         self.reSizeNode(layoutInfo)
 
