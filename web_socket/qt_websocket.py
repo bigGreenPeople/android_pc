@@ -44,6 +44,7 @@ class MyServer(QObject):
             if message['type'] == "LAYOUT":
                 layout_info = json.loads(message["message"])
                 self.ex.saveLayout(layout_info)
+                print(layout_info.keys())
                 self.ex.updateActivitys(layout_info.keys())
             elif message['type'] == "GET_LAYOUT_IMG_END":
                 self.ex.imgGetEnd()
