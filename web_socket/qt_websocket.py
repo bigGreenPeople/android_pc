@@ -5,6 +5,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWebSockets import *
 from PyQt5 import QtWebSockets, QtNetwork
 import json
+import base64
 
 
 class MyServer(QObject):
@@ -43,11 +44,24 @@ class MyServer(QObject):
             message = json.loads(message)
             if message['type'] == "LAYOUT":
                 layout_info = json.loads(message["message"])
+                print(f"LAYOUT:")
+                for key, item in layout_info.items():
+
+                    # print(f"imgData:{item['imgData']}")
+                    byte_data = base64.b64decode(item['imgData'])
+                    item['imgData'] = byte_data
+                    self.ex.saveImg(byte_data)
+
                 self.ex.saveLayout(layout_info)
+
+
                 print(layout_info.keys())
+
                 self.ex.updateActivitys(layout_info.keys())
+
             elif message['type'] == "GET_LAYOUT_IMG_END":
-                self.ex.imgGetEnd()
+                print("imgGetEnd")
+                # self.ex.imgGetEnd()
                 # 显示左后的布局
                 # if len(layout_info.keys()) >= 1:
                 #     self.ex.updateTree(layout_info[list(layout_info.keys())[0]])
@@ -56,7 +70,7 @@ class MyServer(QObject):
         if (self.clientConnection):
             print("接收图片")
             # 清空当前图片
-            self.ex.saveImg(message)
+            # self.ex.saveImg(message)
             # self.ex.updateImg(message)
             # self.clientConnection.sendBinaryMessage(message)
 

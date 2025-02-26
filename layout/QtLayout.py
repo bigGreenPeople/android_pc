@@ -93,8 +93,7 @@ class Example(QWidget):
         index = self.activityComboBox.currentIndex()
         if not str(text).endswith("0"):
             print(self.layout_list[text])
-
-            self.updateImg(self.img_list[index], self.layout_list[text]["height"])
+            self.updateImg(self.layout_list[text]["imgData"], self.layout_list[text]["height"])
             self.reSizeLayoutXy(self.layout_list[text])
             self.updateTree(self.layout_list[text])
         else:
@@ -295,7 +294,7 @@ class Example(QWidget):
         self.img_list.clear()
         send_message = {
             "id": 0,
-            "type": "GET_LAYOUT_IMG",
+            "type": "GET_LAYOUT",
             "message": ""
         }
         send_message = json.dumps(send_message)
